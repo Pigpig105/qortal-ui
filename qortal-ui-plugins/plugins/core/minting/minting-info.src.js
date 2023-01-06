@@ -24,7 +24,13 @@ class MintingInfo extends LitElement {
             sampleBlock: { type: Array },
             addressInfo: { type: Array },
             addressLevel: { type: Array },
+            allPayments: { type: Array },
+            allReceivedPayments: { type: Array },
+            allSendPayments: { type: Array },
             theme: { type: String, reflect: true },
+            qortBalance: { type: Number },
+            totalSent: { type: Number },
+            totalReceived: { type: Number },
             tier4Online: { type: Number }
         }
     }
@@ -204,6 +210,12 @@ class MintingInfo extends LitElement {
         this.sampleBlock = []
         this.addressInfo = []
         this.addressLevel = []
+        this.allPayments = []
+        this.allReceivedPayments = []
+        this.allSendPayments = []
+        this.qortBalance = 0
+        this.totalSent = 0
+        this.totalReceived = 0
         this.tier4Online = 0
         this.theme = localStorage.getItem('qortalTheme') ? localStorage.getItem('qortalTheme') : 'light'
     }
@@ -290,7 +302,7 @@ class MintingInfo extends LitElement {
                         <div class="content-box">
                             <span class="title">Total QORT Minted</span>
                             <hr style="color: #eee; border-radius: 90%; margin-bottom: 1rem;">
-                            <h4>${this.getQortWalletBalance} QORT</h4>
+                            <h4>${this.qortBalance} QORT</h4>
                         </div><br>
                         <div>
 		            <span class="level-black">${translate("mintingpage.mchange18")} <div class="level-blue">${this._levelUp()}</div> ${translate("mintingpage.mchange38")} <div class="level-blue">${this._levelUpDays()}</div> ${translate("mintingpage.mchange29")} !</span>
@@ -387,6 +399,13 @@ class MintingInfo extends LitElement {
             setTimeout(getAddressInfo, 30000)
         }
 
+        const getQortWalletBalance = () => {
+            parentEpml.request('apiCall', { url: `/addresses/balance/${window.parent.reduxStore.getState().app.selectedAddress.address}` }).then((res) => {
+                setTimeout(() => { this.qortBalance = res }, 1)
+            })
+            setTimeout(getQortWalletBalance, 30000)
+        }
+
         window.addEventListener('storage', () => {
             const checkLanguage = localStorage.getItem('qortalLanguage')
             const checkTheme = localStorage.getItem('qortalTheme')
@@ -418,6 +437,7 @@ class MintingInfo extends LitElement {
                     setTimeout(getAdminInfo, 1)
                     setTimeout(getNodeInfo, 1)
                     setTimeout(getAddressInfo, 1)
+                    setTimeout(getQortWalletBalance, 1)
                     setInterval(this.getAddressLevel, 30000)
                     configLoaded = true
                 }
@@ -436,6 +456,68 @@ class MintingInfo extends LitElement {
         })
         this.addressLevel = callLevels
         this.tier4Online = parseFloat(this.addressLevel[7].count) + parseFloat(this.addressLevel[8].count)
+    }
+
+    async getPaymentsGridItems() {
+        this.allPayments = []
+        this.allReceivedPayments = []
+        this.totalSent = 0
+        this.totalReceived = 0
+        const myNode = store.getState().app.nodeConfig.knownNodes[store.getState().app.nodeConfig.node]
+        const nodeUrl = myNode.protocol + '://' + myNode.domain + ':' + myNode.port
+        const paymentsUrl = `${nodeUrl}/transactions/address/${window.parent.reduxStore.getState().app.selectedAddress.address}?limit=0&reverse=true`
+
+        const paymentsAll = await fetch(paymentsUrl).then(response => {
+           return response.json()
+        })
+
+        this.allPayments = paymentsAll.map(item => {
+            const searchType = item.type
+            if (searchType == "PAYMENT") {
+                return {
+                    timestamp: item.timestamp,
+                    creatorAddress: item.creatorAddress,
+                    recipient: item.recipient,
+                    amount: item.amount,
+                    fee: item.fee,
+                    blockHeight: item.blockHeight
+                }
+            }
+        }).filter(item => !!item)
+
+        this.allSendPayments = this.allPayments.map(item => {
+            const searchSendAddress = item.creatorAddress
+            if (searchSendAddress == window.parent.reduxStore.getState().app.selectedAddress.address) {
+                return {
+                    timestamp: item.timestamp,
+                    creatorAddress: item.creatorAddress,
+                    recipient: item.recipient,
+                    amount: item.amount
+   
+                }
+            }
+        }).filter(item => !!item)
+
+        this.allSendPayments.map(item => {
+            this.totalSent += parseFloat(item.amount)
+        })
+
+        this.allReceivedPayments = this.allPayments.map(item => {
+            const searchReceivedAddress = item.recipient
+            if (searchReceivedAddress == window.parent.reduxStore.getState().app.selectedAddress.address) {
+                return {
+                    timestamp: item.timestamp,
+                    creatorAddress: item.creatorAddress,
+                    recipient: item.recipient,
+                    amount: item.amount
+   
+                }
+            }
+        }).filter(item => !!item)
+
+        this.allReceivedPayments.map(item => {
+            this.totalReceived += parseFloat(item.amount)
+        })
     }
 
     changeTheme() {
@@ -525,14 +607,8 @@ class MintingInfo extends LitElement {
         return "" + countBlocksString
     }
 
-    updateQortWalletBalance() {
-        const getQortWalletBalance = async () => {
-            let QortWalletBalance = await parentEpml.request('apiCall', {
-                type: 'api',
-                url: `/addresses/balance/${this.selectedAddress.address}?apiKey=${this.getApiKey()}`,
-            })
-            return QortWalletBalance
-        };
+    qortMinted() {
+
     }
 
     _blocksNeed() {
