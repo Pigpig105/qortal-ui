@@ -286,6 +286,11 @@ class MintingInfo extends LitElement {
                             <span class="title">${translate("mintingpage.mchange17")}</span>
                             <hr style="color: #eee; border-radius: 90%; margin-bottom: 1rem;">
                             <h4>${this._levelUpBlocks()} ${translate("mintingpage.mchange26")}</h4>
+                        </div>
+                        <div class="content-box">
+                            <span class="title">Total QORT Minted</span>
+                            <hr style="color: #eee; border-radius: 90%; margin-bottom: 1rem;">
+                            <h4>${this.getQortWalletBalance} QORT</h4>
                         </div><br>
                         <div>
 		            <span class="level-black">${translate("mintingpage.mchange18")} <div class="level-blue">${this._levelUp()}</div> ${translate("mintingpage.mchange38")} <div class="level-blue">${this._levelUpDays()}</div> ${translate("mintingpage.mchange29")} !</span>
@@ -518,6 +523,16 @@ class MintingInfo extends LitElement {
     _levelUpBlocks() {
         let countBlocksString = (this._blocksNeed() - (this.addressInfo.blocksMinted + this.addressInfo.blocksMintedAdjustment)).toString()
         return "" + countBlocksString
+    }
+
+    updateQortWalletBalance() {
+        const getQortWalletBalance = async () => {
+            let QortWalletBalance = await parentEpml.request('apiCall', {
+                type: 'api',
+                url: `/addresses/balance/${this.selectedAddress.address}?apiKey=${this.getApiKey()}`,
+            })
+            return QortWalletBalance
+        };
     }
 
     _blocksNeed() {
@@ -871,6 +886,12 @@ class MintingInfo extends LitElement {
     isEmptyArray(arr) {
         if (!arr) return true
         return arr.length === 0
+    }
+
+    getApiKey() {
+        const apiNode = store.getState().app.nodeConfig.knownNodes[store.getState().app.nodeConfig.node]
+        let apiKey = apiNode.apiKey
+        return apiKey
     }
 }
 
