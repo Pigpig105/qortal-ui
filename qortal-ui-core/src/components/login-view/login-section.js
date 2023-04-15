@@ -45,6 +45,8 @@ class LoginSection extends connect(store)(LitElement) {
             backedUpWalletJSON: { type: Object },
             backedUpSeedLoading: { type: Boolean },
             nodeConfig: { type: Object },
+            NamesAddress: { type: Array },
+            imageUrl: { type: String },
             theme: { type: String, reflect: true }
         }
     }
@@ -92,6 +94,8 @@ class LoginSection extends connect(store)(LitElement) {
         this.selectedWallet = {}
         this.loginErrorMessage = ''
         this.saveInBrowser = false
+        this.NamesAddress = []
+        this.imageUrl = ''
         this.theme = localStorage.getItem('qortalTheme') ? localStorage.getItem('qortalTheme') : 'light'
 
         this.loginOptions = [
@@ -267,6 +271,23 @@ class LoginSection extends connect(store)(LitElement) {
                 .checkboxLabel:hover{
                     cursor: pointer;
                 }
+
+                .round-fullinfo {
+                    position: relative;
+                    width: 68px;
+                    height: 68px;
+                    border-radius: 50%;
+                }
+
+                .full-info-logo {
+                    width: 68px;
+                    height: 68px;
+                    border-radius: 50%;
+                }
+
+                .inline-block-child {
+                    flex: 1;
+                }
             </style>
             
             <div id="loginSection">
@@ -352,7 +373,7 @@ class LoginSection extends connect(store)(LitElement) {
 
                         <div page="unlockStored" id="unlockStoredPage">
                             <div style="text-align:center;">
-                                <mwc-icon id='accountIcon' style="padding-bottom: 24px; color: var(--black);">account_circle</mwc-icon>
+                                ${this.getAvatar()}
                                 <br>
                                 <span style="font-size:14px; font-weight: 100; font-family: 'Roboto Mono', monospace; color: var(--black);">${this.selectedWallet.address0}</span>
                             </div>
@@ -415,6 +436,27 @@ class LoginSection extends connect(store)(LitElement) {
                 this.loginErrorMessage = ''
             }
         })
+
+        const getNamesAddress = () => {
+            parentEpml.request("apiCall", { url: `/names/address/${this.selectedWallet.address0}` }).then((res) => {
+                setTimeout(() => { this.NamesAddress = res; }, 1)
+            })
+            setTimeout(getNamesAddress, 1)
+        };
+
+        parentEpml.ready().then(() => {
+            parentEpml.subscribe("config", async c => {
+                if (!configLoaded) {
+                    setTimeout(getNamesAddress, 1)
+                    configLoaded = true
+                }
+                this.config = JSON.parse(c)
+            })
+            parentEpml.subscribe('copy_menu_switch', async value => {
+                if (value === 'false' && window.getSelection().toString().length !== 0) this.clearSelection()
+            })
+        })
+        parentEpml.imReady()
     }
 
     renderBackText() {
@@ -712,6 +754,23 @@ class LoginSection extends connect(store)(LitElement) {
         this.hasStoredWallets = Object.keys(store.getState().user.storedWallets).length > 0
         this.selectedPage = this.hasStoredWallets ? 'storedWallet' : 'loginOptions'
         this.shadowRoot.querySelector('#deleteWalletDialog').close()
+    }
+
+    async getAllWithAddress(myAddress) {
+        await this.getAddressUserAvatar(myAddress)
+    }
+
+    getAvatar() {
+        const avatarNode = store.getState().app.nodeConfig.knownNodes[store.getState().app.nodeConfig.node]
+        const avatarUrl = avatarNode.protocol + '://' + avatarNode.domain + ':' + avatarNode.port
+        const url = `${avatarUrl}/arbitrary/THUMBNAIL/${this.NamesAddress.name}/qortal_avatar?async=true&apiKey=${this.getApiKey()}`
+        return html`<img class="round-fullinfo" src="${url}" onerror="this.src='/img/incognito.png';" />`
+    }
+
+    getApiKey() {
+        const apiNode = store.getState().app.nodeConfig.knownNodes[store.getState().app.nodeConfig.node];
+        let apiKey = apiNode.apiKey;
+        return apiKey;
     }
 }
 
