@@ -142,6 +142,33 @@ parentEpml.ready().then(() => {
 			menus: [],
 			parent: false,
 		},
+		{
+			url: 'voting-info',
+			domain: 'core',
+			page: 'voting-info/index.html',
+			title: 'Information',
+			icon: 'vaadin:info-circle',
+			menus: [],
+			parent: false,
+		},
+		{
+			url: 'proposals',
+			domain: 'core',
+			page: 'proposals/index.html',
+			title: 'Proposals',
+			icon: 'vaadin:diploma-scroll',
+			menus: [],
+			parent: false,
+		},
+		{
+			url: 'create-proposal',
+			domain: 'core',
+			page: 'create-proposal/index.html',
+			title: 'Create Proposal',
+			icon: 'vaadin:add-dock',
+			menus: [],
+			parent: false,
+		},
 	];
 
 	const registerPlugins = (pluginInfo) => {

@@ -39,7 +39,11 @@
 		"groups": "GROUPS",
 		"sm1": "NAMES",
 		"sm2": "NAME MANAGEMENT",
-		"sm3": "NAMES MARKET"
+		"sm3": "NAMES MARKET",
+		"voting": "VOTING",
+		"votinginfo": "INFORMATION",
+		"proposals": "PROPOSALS",
+		"createproposal": "CREATE PROPOSAL"
 	},
 	"login": {
 		"login": "Login",

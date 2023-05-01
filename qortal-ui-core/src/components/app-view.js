@@ -1540,6 +1540,22 @@ class AppView extends connect(store)(LitElement) {
                     </side-menu-item>
                 </side-menu-item>
 
+                <side-menu-item label="${translate('sidemenu.voting')}" expanded>
+                    <vaadin-icon icon="vaadin:scale" slot="icon"></vaadin-icon>
+
+                    <side-menu-item drawer-toggle label="${translate('sidemenu.votinginfo')}" href="/app/voting-info">
+                        <vaadin-icon icon="vaadin:info-circle" slot="icon" ></vaadin-icon>
+                    </side-menu-item>
+
+                    <side-menu-item drawer-toggle label="${translate('sidemenu.proposals')}" href="/app/proposals">
+                        <vaadin-icon icon="vaadin:diploma-scroll" slot="icon" ></vaadin-icon>
+                    </side-menu-item>
+
+                    <side-menu-item drawer-toggle label="${translate('sidemenu.createproposal')}" href="/app/create-proposal">
+                        <vaadin-icon icon="vaadin:add-dock" slot="icon" ></vaadin-icon>
+                    </side-menu-item>
+                </side-menu-item>
+
                 <side-menu-item drawer-toggle label="${translate('sidemenu.groups')}" href="/app/group-management">
                     <vaadin-icon icon="vaadin:group" slot="icon"></vaadin-icon>
                 </side-menu-item>

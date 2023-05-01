@@ -148,6 +148,18 @@ const generateForPlugins = () => {
 			in: 'plugins/core/q-app/q-apps.src.js',
 			out: 'plugins/core/q-app/q-apps.js',
 		},
+		{
+			in: 'plugins/core/voting-info/voting-info.src.js',
+			out: 'plugins/core/voting-info/voting-info.js',
+		},
+		{
+			in: 'plugins/core/proposals/proposals.src.js',
+			out: 'plugins/core/proposals/proposals.js',
+		},
+		{
+			in: 'plugins/core/create-proposal/create-proposal.src.js',
+			out: 'plugins/core/create-proposal/create-proposal.js',
+		},
 	].map((file) => {
 		return generateRollupConfig(
 			path.join(__dirname, file.in),
