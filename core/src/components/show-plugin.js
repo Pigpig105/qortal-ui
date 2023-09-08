@@ -10,6 +10,56 @@ import { setIsOpenDevDialog, setNewTab } from '../redux/app/app-actions.js'
 import localForage from 'localforage'
 import FileSaver from 'file-saver'
 import { use, get, translate, translateUnsafeHTML, registerTranslateConfig } from 'lit-translate'
+import React, { useState } from 'react';
+import { useDrag, useDrop } from 'react-dnd';
+import { NativeTypes } from 'react-dnd-html5-backend';
+
+function DraggableButton({ button, index, moveButton }) {
+  const [, ref] = useDrag({
+    type: 'BUTTON',
+    item: { index },
+  });
+
+  const [, drop] = useDrop({
+    accept: 'BUTTON',
+    hover: (draggedItem) => {
+      if (draggedItem.index !== index) {
+        moveButton(draggedItem.index, index);
+        draggedItem.index = index;
+      }
+    },
+  });
+
+  return (
+    <div ref={(node) => ref(drop(node))} style={{ padding: '5px', cursor: 'move' }}>
+      {button.text}
+    </div>
+  );
+}
+
+function ShowPlugin(props) {
+  const [buttons, setButtons] = useState(props.buttons);
+
+  const moveButton = (fromIndex, toIndex) => {
+    const updatedButtons = [...buttons];
+    const [movedButton] = updatedButtons.splice(fromIndex, 1);
+    updatedButtons.splice(toIndex, 0, movedButton);
+    setButtons(updatedButtons);
+  };
+
+  return (
+    <div>
+      <h1>Show Plugin</h1>
+      <div>
+        {buttons.map((button, index) => (
+          <DraggableButton key={button.id} button={button} index={index} moveButton={moveButton} />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+export default ShowPlugin;
 
 registerTranslateConfig({
   loader: lang => fetch(`/language/${lang}.json`).then(res => res.json())
